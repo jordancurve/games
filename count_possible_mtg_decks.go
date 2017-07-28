@@ -13,11 +13,6 @@ import (
 	"strings"
 )
 
-// Cache key, used to speed up the computation.
-type key struct {
-	numToBuy, numProducts int
-}
-
 type Legality struct {
 	Format, Legality string
 }
@@ -69,6 +64,11 @@ func FormatLimits(mtgJsonFile string) map[string][]int {
 		}
 	}
 	return limits
+}
+
+// Cache key, used to speed up LimitedMultiChooose.
+type key struct {
+	numToBuy, numProducts int
 }
 
 // LimitedMultiChoose(B, L) returns the number of ways to buy B items from a
