@@ -73,16 +73,16 @@ type key struct {
 }
 
 // CountDecks(M, S, L) returns the number of ways to make a deck with M
-// cards in the mainboard and S cards in the sideboard where there are len(L)
+// cards in the main deck and S cards in the sideboard where there are len(L)
 // cards to choose from, and there can be at most L[I] copies of card I in your
-// mainboard and sideboard combined. (0 < I < len(L)).
+// mainboard and sideboard combined (0 < I < len(L)).
 // Examples (mainboard/sideboard):
-//   CountDecks(3, 0, []int{1,2,3})=6 (122 123 133 223 233 333)
-//   CountDecks(3, 3, []int{1,2,3})=6 (122/333 123/233 133/223 223/133 233/123 333/122)
-//   CountDecks(3, 1, []int{1,2,3})=12 (122/3 123/2 123/3 133/2 133/3 223/1 223/3 233/1 233/2 233/3 333/1 333/2)
-//   CountDecks(4, 0, []int{1,2,3})=5 (1223 1233 1333 2233 2333)
-//   CountDecks(4, 1, []int{1,2,3})=8 (1223/3 1233/2 1233/2 1333/2 2233/1 2233/3 2333/1 2333/2)
-//   CountDecks(4, 2, []int{1,2,3})=5 (1223/33 1233/23 1333/22 2233/13 2333/12)
+//   CountDecks(3, 0, []int{1,2,3})=6 (abb abc acc bbc bcc ccd)
+//   CountDecks(3, 3, []int{1,2,3})=6 (abb/ccc abc/bcc acc/bbc bbc/acc bcc/abc ccc/abb)
+//   CountDecks(3, 1, []int{1,2,3})=12 (abb/c abc/b abc/c acc/b acc/c bbc/a bbc/c bcc/a bcc/b bcc/c ccc/a ccc/b)
+//   CountDecks(4, 0, []int{1,2,3})=5 (abbc abcc accc bbcc bccc)
+//   CountDecks(4, 1, []int{1,2,3})=8 (abbc/c abcc/b abcc/b accc/b bbcc/a bbcc/c bccc/a bccc/b)
+//   CountDecks(4, 2, []int{1,2,3})=5 (abbc/cc abcc/bc accc/bb bbcc/ac bccc/ab)
 //   CountDecks(60, 15, []int{75})=1 (the "all islands" example)
 func CountDecks(numMain, numSide int, limit []int) *big.Int {
 	return _countDecks(numMain, numSide, limit, map[key]*big.Int{})
