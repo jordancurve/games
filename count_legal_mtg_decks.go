@@ -1,9 +1,10 @@
 // Calculate the number of legal 75-card decks (60 main deck + 15 sideboard) in various Magic the Gathering formats.
 // Results (as of 2017-07-28 mtgjson data):
-// Standard: 3.01e+152 (301392966750935224627298406818554052849672810773182479866521612789574537385738326677015531414716511718081165380766952246151140442798522064088841448872000)
-// Modern: 2.67e+209 (267288690384613372671663162278241780351196965911279109157717273230325621580562675437659710771377059717771631912904871837546012977270113499191074738887699873916616847170601162912271662668197667947811197217074800)
-// Legacy: 1.02e+223 (10243361758464765987377094127212880951843990108913523732373068664535987345931468562282781541568129106632398078903666735021036840698409563318420556365566488735448528259819036265230816325253200105484947880576210519165425515520)
-// Vintage: 1.27e+223 (12720293787797022158089718710201114942575244255951494583136480109240791401204724368850245018448000631217824432575745007433726128618564056906640516264914838668934899721150373902976392246408021625533684061071939564677484518960)
+// Standard: 1.89e+152 (189345355916230985373072200536169947947295794716089748222356848897535008894697835577214506567305987637419359573332299963631250585641452157281030004526776)
+//   Modern: 2.47e+209 (246511459455625348732139446965857761235921626159567784697436049301569552137240823762776689418734538645168096497645751307281466847703823941861869181432462231383059014175889995268515798746671138992528629285395774)
+//	 Legacy: 9.71e+222 (9711422830638704141259812921405089710335676405917350613072183705149034130461377032700261245864254868125958229056507427492174381630697827240946680622430281166393400388562121015248005082352931408613565265695867679151960622256)
+//	Vintage: 1.21e+223 (12063272679040923314177308539650193007692645139519724704069486829832479473447140142201268049499776311015674384983815936045615943597154054628579727750462487506874852277403770068593267760078598877771190130846684438528997450774)
+// 1223
 package main
 
 import (
@@ -25,12 +26,10 @@ type Card struct {
 }
 
 func main() {
-	limits := FormatLimits("AllCards-x.json") // from https://mtgjson.com/json/AllCards-x.json.zip
+	//limits := FormatLimits("AllCards-x.json") // from https://mtgjson.com/json/AllCards-x.json.zip
 	formats := []string{"Standard", "Modern", "Legacy", "Vintage"}
 	for _, f := range formats {
-		c := LimitedMultiChoose(75, limits[f])
-		b := new(big.Int).Binomial(75, 15)
-		c.Mul(c, b)
+		c := CountDecks(60, 15, limits[f])
 		fmt.Printf("%8s: %.3g (%v)\n", f, new(big.Float).SetInt(c), c)
 	}
 }
@@ -71,32 +70,40 @@ func FormatLimits(mtgJsonFile string) map[string][]int {
 
 // Cache key, used to speed up LimitedMultiChooose.
 type key struct {
-	numToBuy, numProducts int
+	main, side, numCards int
 }
 
-// LimitedMultiChoose(B, L) returns the number of ways to buy B items from a
-// store with len(L) products, where item I has only L[I] in stock (0 < I < N).
-// For example, LimitedMultiChoose(5, []int{3,4,6})=17, which is the number of
-// ways to choose 5 items to buy from a selection of 3 products, where product
-// 0 has 3 in stock, product 1 has 4 in stock, and product 2 has 6 in stock.
-func LimitedMultiChoose(numToBuy int, numInStock []int) *big.Int {
-	return _limitedMultiChoose(numToBuy, numInStock, map[key]*big.Int{})
+// CountDecks(M, S, L) returns the number of ways to make a deck with M
+// cards in the mainboard and S cards in the sideboard where there are len(L)
+// cards to choose from, and there can be at most [I] copies of card I in your
+// mainboard and sideboard combined. (0 < I < len(L)).
+// Examples (mainboard/sideboard):
+//   CountDecks(3, 0, []int{1,2,3})=6 (122 123 133 223 233 333)
+//   CountDecks(3, 3, []int{1,2,3})=6 (122/333 123/233 133/223 223/133 233/123 333/122)
+//   CountDecks(3, 1, []int{1,2,3})=12 (122/3 123/2 123/3 133/2 133/3 223/1 223/3 233/1 233/2 233/3 333/1 333/2)
+//   CountDecks(4, 0, []int{1,2,3})=5 (1223 1233 1333 2233 2333)
+//   CountDecks(4, 1, []int{1,2,3})=8 (1223/3 1233/2 1233/2 1333/2 2233/1 2233/3 2333/1 2333/2)
+//   CountDecks(4, 2, []int{1,2,3})=5 (1223/33 1233/23 1333/22 2233/13 2333/12)
+func CountDecks(numMain, numSide int, limit []int) *big.Int {
+	return _countDecks(numMain, numSide, limit, map[key]*big.Int{})
 }
 
-func _limitedMultiChoose(numToBuy int, numInStock []int, cache map[key]*big.Int) *big.Int {
-	if numToBuy == 0 {
+func _countDecks(numMain, numSide int, limit []int, cache map[key]*big.Int) *big.Int {
+	if numMain+numSide == 0 {
 		return big.NewInt(1)
 	}
-	if numToBuy < 0 || len(numInStock) == 0 {
+	if numMain < 0 || numSide < 0 || len(limit) == 0 {
 		return big.NewInt(0)
 	}
-	key := key{numToBuy, len(numInStock)}
+	key := key{numMain, numSide, len(limit)}
 	if val, ok := cache[key]; ok {
 		return val
 	}
 	sum := big.NewInt(0)
-	for i := 0; i <= numInStock[0]; i++ {
-		sum.Add(sum, _limitedMultiChoose(numToBuy-i, numInStock[1:], cache))
+	for m := 0; m <= numMain && m <= limit[0]; m++ {
+		for s := 0; s <= numSide && m+s <= limit[0]; s++ {
+			sum.Add(sum, _countDecks(numMain-m, numSide-s, limit[1:], cache))
+		}
 	}
 	cache[key] = sum
 	return sum
