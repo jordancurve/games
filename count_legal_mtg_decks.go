@@ -74,7 +74,7 @@ type key struct {
 
 // CountDecks(M, S, L) returns the number of ways to make a deck with M
 // cards in the mainboard and S cards in the sideboard where there are len(L)
-// cards to choose from, and there can be at most [I] copies of card I in your
+// cards to choose from, and there can be at most L[I] copies of card I in your
 // mainboard and sideboard combined. (0 < I < len(L)).
 // Examples (mainboard/sideboard):
 //   CountDecks(3, 0, []int{1,2,3})=6 (122 123 133 223 233 333)
