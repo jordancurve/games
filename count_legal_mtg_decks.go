@@ -25,7 +25,7 @@ type Card struct {
 }
 
 func main() {
-	//limits := FormatLimits("AllCards-x.json") // from https://mtgjson.com/json/AllCards-x.json.zip
+	limits := FormatLimits("AllCards-x.json") // from https://mtgjson.com/json/AllCards-x.json.zip
 	formats := []string{"Standard", "Modern", "Legacy", "Vintage"}
 	for _, f := range formats {
 		c := CountDecks(60, 15, limits[f])
@@ -83,6 +83,7 @@ type key struct {
 //   CountDecks(4, 0, []int{1,2,3})=5 (1223 1233 1333 2233 2333)
 //   CountDecks(4, 1, []int{1,2,3})=8 (1223/3 1233/2 1233/2 1333/2 2233/1 2233/3 2333/1 2333/2)
 //   CountDecks(4, 2, []int{1,2,3})=5 (1223/33 1233/23 1333/22 2233/13 2333/12)
+//   CountDecks(60, 15, []int{75})=1 (the "all islands" example)
 func CountDecks(numMain, numSide int, limit []int) *big.Int {
 	return _countDecks(numMain, numSide, limit, map[key]*big.Int{})
 }
@@ -91,7 +92,7 @@ func _countDecks(numMain, numSide int, limit []int, cache map[key]*big.Int) *big
 	if numMain+numSide == 0 {
 		return big.NewInt(1)
 	}
-	if numMain < 0 || numSide < 0 || len(limit) == 0 {
+	if len(limit) == 0 {
 		return big.NewInt(0)
 	}
 	key := key{numMain, numSide, len(limit)}
