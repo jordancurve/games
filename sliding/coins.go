@@ -51,7 +51,6 @@ type MoveList []Move
 
 func main() {
 	start := CellList{34, 33, 44, 32, 43, 54}.Set()
-	//start = CellList{31, 32, 34, 42, 43, 44}.Set()
 	queue := []Entry{{MoveList{}, start}}
 	seen := map[string]bool{}
 	maxMoves := 0
@@ -74,11 +73,6 @@ func main() {
 			//			}
 			newent := Entry{entry.Moves.Append(m), cset.MakeMove(m)}
 			if newent.CellSet.IsWin() {
-				s := start.List().Set()
-				for _, m := range entry.Moves {
-					s = s.MakeMove(m)
-					fmt.Printf("%s: %s\n", m, s)
-				}
 				fmt.Printf("Found solution: %s: %v\n", start, newent)
 				return
 			}
@@ -188,7 +182,8 @@ func (c Cell) legal() bool {
 }
 
 func (cset CellSet) IsWin() bool {
-	return cset[31] && cset[32] && cset[33] && cset[34] && cset[35] && cset[36]
+	// Uncomment for triangle->line puzzle
+	// return cset[31] && cset[32] && cset[33] && cset[34] && cset[35] && cset[36]
 	neighborCount := map[Cell]int{}
 	if len(cset) != 6 {
 		return false
