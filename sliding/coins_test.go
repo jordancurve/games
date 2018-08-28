@@ -70,22 +70,28 @@ func TestMoves(t *testing.T) {
 		cells CellList
 		want  MoveList
 	}{
-		{CellList{}, []Move{}},
-		{CellList{22, 33}, []Move{}},
-		{CellList{22, 33, 32}, []Move{{22, 43}, {32, 23}, {33, 21}}},
-		{CellList{22, 23, 33, 43, 44}, []Move{
-			{22, 34}, {22, 54}, {22, 32},
-			{23, 34}, {23, 54}, {23, 32},
-			{44, 32}, {44, 12}, {44, 34},
-			{43, 32}, {43, 12}, {43, 34},
-		}},
-		{CellList{22, 23, 43, 44, 35}, []Move{
-			{35, 34}, {35, 54}, {35, 32}, {35, 12},
-			{43, 33}, {43, 12}, {43, 24}, {43, 45},
-			{44, 33}, {44, 32}, {44, 12}, {44, 24}, {44, 34},
-			{22, 33}, {22, 54}, {22, 24}, {22, 45},
-			{23, 33}, {23, 32}, {23, 54}, {23, 34}, {23, 45},
-		}},
+		{CellList{}, MoveList{}},
+		{CellList{22, 33}, MoveList{}},
+		{CellList{22, 33, 32}, MoveList{{22, 43}, {32, 23}, {33, 21}}},
+		{
+			CellList{22, 23, 33, 43, 44},
+			MoveList{
+				{22, 34}, {22, 54}, {22, 32},
+				{23, 34}, {23, 54}, {23, 32},
+				{44, 32}, {44, 12}, {44, 34},
+				{43, 32}, {43, 12}, {43, 34},
+			},
+		},
+		{
+			CellList{22, 23, 43, 44, 35},
+			MoveList{
+				{35, 34}, {35, 54}, {35, 32}, {35, 12},
+				{43, 33}, {43, 12}, {43, 24}, {43, 45},
+				{44, 33}, {44, 32}, {44, 12}, {44, 24}, {44, 34},
+				{22, 33}, {22, 54}, {22, 24}, {22, 45},
+				{23, 33}, {23, 32}, {23, 54}, {23, 34}, {23, 45},
+			},
+		},
 	}
 	for _, c := range cases {
 		cset := c.cells.Set()
@@ -94,6 +100,50 @@ func TestMoves(t *testing.T) {
 		c.want.Sort()
 		if !reflect.DeepEqual(got, c.want) {
 			t.Errorf("(%v).Moves()=%v; want %v", c.cells, got, c.want)
+		}
+	}
+}
+
+func TestMovesContains(t *testing.T) {
+	cases := []struct {
+		cells CellList
+		want  Move
+	}{
+		{CellList{31, 32, 34, 42, 43, 44}, Move{42, 54}},
+	}
+	for _, c := range cases {
+		cset := c.cells.Set()
+		got := cset.Moves()
+		var found bool
+		for _, g := range got {
+			if g == c.want {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("(%v).Moves()=%v; doesn't contain %v", c.cells, got, c.want)
+		}
+	}
+}
+
+func TestMakeMove(t *testing.T) {
+	cases := []struct {
+		cells CellList
+		move  Move
+		want  CellList
+	}{
+		{
+			CellList{33, 24, 34, 43, 44, 54},
+			Move{54, 45},
+			CellList{24, 33, 34, 43, 44, 45},
+		},
+	}
+	for _, c := range cases {
+		cset := c.cells.Set()
+		got := cset.MakeMove(c.move).List()
+		if !reflect.DeepEqual(got, c.want) {
+			t.Errorf("(%v).MakeMove(%v)=%v; want %v", c.cells, c.move, got, c.want)
 		}
 	}
 }

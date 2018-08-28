@@ -43,14 +43,15 @@ type Move struct {
 }
 
 type Entry struct {
-	Moves MoveList
-	Cset  CellSet
+	Moves   MoveList
+	CellSet CellSet
 }
 
 type MoveList []Move
 
 func main() {
 	start := CellList{34, 33, 44, 32, 43, 54}.Set()
+	//start = CellList{31, 32, 34, 42, 43, 44}.Set()
 	queue := []Entry{{MoveList{}, start}}
 	seen := map[string]bool{}
 	maxMoves := 0
@@ -61,21 +62,38 @@ func main() {
 			maxMoves = len(entry.Moves) + 1
 			fmt.Printf("Checking for %d-move solutions...\n", maxMoves)
 		}
-		cset := entry.Cset
+		cset := entry.CellSet
 		key := cset.String()
 		if seen[key] {
 			continue
 		}
 		seen[key] = true
 		for _, m := range cset.Moves() {
-			newent := Entry{append(entry.Moves, m), cset.MakeMove(m)}
-			if newent.Cset.IsWin() {
+			//			if len(entry.Moves) > 0 && m.a == entry.Moves[len(entry.Moves)-1].z {
+			//				continue
+			//			}
+			newent := Entry{entry.Moves.Append(m), cset.MakeMove(m)}
+			if newent.CellSet.IsWin() {
+				s := start.List().Set()
+				for _, m := range entry.Moves {
+					s = s.MakeMove(m)
+					fmt.Printf("%s: %s\n", m, s)
+				}
 				fmt.Printf("Found solution: %s: %v\n", start, newent)
 				return
 			}
 			queue = append(queue, newent)
 		}
 	}
+}
+
+func (moves MoveList) Append(move Move) MoveList {
+	ms := MoveList{}
+	for _, m := range moves {
+		ms = append(ms, m)
+	}
+	ms = append(ms, move)
+	return ms
 }
 
 func (cells CellList) String() string {
@@ -88,6 +106,13 @@ func (cells CellList) String() string {
 
 func (cset CellSet) String() string {
 	return cset.List().String()
+}
+
+func (cset CellSet) MakeMoves(moves MoveList) CellSet {
+	for _, m := range moves {
+		cset = cset.MakeMove(m)
+	}
+	return cset
 }
 
 func (cset CellSet) MakeMove(move Move) CellSet {
@@ -117,20 +142,19 @@ func (cset CellSet) Moves() MoveList {
 		if cset.Pinned(c) {
 			continue
 		}
+		delete(cset, c)
 		for d := Cell(0); d < Cell(100); d++ {
-			if cset[d] {
+			if d == c || cset[d] {
 				continue
 			}
-			delete(cset, c)
 			if cset.Pinned(d) {
-				cset[c] = true
 				continue
 			}
 			if cset.AdjCount(d) >= 2 {
 				moves = append(moves, Move{c, d})
 			}
-			cset[c] = true
 		}
+		cset[c] = true
 	}
 	return moves
 }
@@ -164,6 +188,7 @@ func (c Cell) legal() bool {
 }
 
 func (cset CellSet) IsWin() bool {
+	return cset[31] && cset[32] && cset[33] && cset[34] && cset[35] && cset[36]
 	neighborCount := map[Cell]int{}
 	if len(cset) != 6 {
 		return false
@@ -265,5 +290,17 @@ func (moves MoveList) String() string {
 }
 
 func (e Entry) String() string {
-	return fmt.Sprintf("%s: %s", e.Moves, e.Cset)
+	return fmt.Sprintf("%s: %s", e.Moves, e.CellSet)
+}
+
+func (cset CellSet) Equal(other CellSet) bool {
+	if len(cset) != len(other) {
+		return false
+	}
+	for k, v := range cset {
+		if other[k] != v {
+			return false
+		}
+	}
+	return true
 }
