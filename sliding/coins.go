@@ -21,7 +21,7 @@ Hex grid:
  40    52    64    76    88
     51    63    75    87
 
-For example, 44 is adjacent to 33, 34, 45, 55, 54, and 43.
+44 is adjacent to 33, 34, 45, 55, 54, and 43.
 */
 
 package main
@@ -50,7 +50,7 @@ type Entry struct {
 type MoveList []Move
 
 func main() {
-	start := CellList{34, 33, 44, 32, 43, 54}.Set()
+	start := CellList{34, 33, 44, 32, 43, 54}.Set() // Triangle.
 	queue := []Entry{{MoveList{}, start}}
 	seen := map[string]bool{}
 	maxMoves := 0
@@ -68,15 +68,12 @@ func main() {
 		}
 		seen[key] = true
 		for _, m := range cset.Moves() {
-			//			if len(entry.Moves) > 0 && m.a == entry.Moves[len(entry.Moves)-1].z {
-			//				continue
-			//			}
-			newent := Entry{entry.Moves.Append(m), cset.MakeMove(m)}
-			if newent.CellSet.IsWin() {
-				fmt.Printf("Found solution: %s: %v\n", start, newent)
+			res := Entry{entry.Moves.Append(m), cset.MakeMove(m)}
+			if res.CellSet.IsWin() {
+				fmt.Printf("Found solution: %s: %v\n", start, res)
 				return
 			}
-			queue = append(queue, newent)
+			queue = append(queue, res)
 		}
 	}
 }
