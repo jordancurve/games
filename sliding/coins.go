@@ -1,8 +1,10 @@
 // Solver for coin sliding puzzle.
 //
-// https://twitter.com/TamasGorbe/status/1033723716440674304
+// https://twitter.com/jordancurve/status/1034531739811672065
 //
-// Six coins are put on a table as shown on the left. Your task is to get the formation on the right in the least moves possible. A move means sliding a coin, without disturbing the rest, to a new place where it touches two others. Coins must stay on the table at all times.
+// Source for puzzle: https://twitter.com/TamasGorbe/status/1033723716440674304
+//
+// "Six coins are put on a table as shown on the left. Your task is to get the formation on the right in the least moves possible. A move means sliding a coin, without disturbing the rest, to a new place where it touches two others. Coins must stay on the table at all times."
 
 /*
 Hex grid:
@@ -111,7 +113,7 @@ func (cset CellSet) List() CellList {
 }
 func (cset CellSet) Moves() MoveList {
 	moves := MoveList{}
-	for c := range cset {
+	for _, c := range cset.List() {
 		if cset.Pinned(c) {
 			continue
 		}
