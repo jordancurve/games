@@ -130,6 +130,10 @@ func (cset CellSet) List() CellList {
 	cells.Sort()
 	return cells
 }
+
+// Moves() lists the valid moves from a list of occupied cells. It just checks that the piece
+// being moved isn't pinned and that the destination isn't blocked.  It doesn't actually
+// do pathfinding to make sure the move is legal.
 func (cset CellSet) Moves() MoveList {
 	moves := MoveList{}
 	for _, c := range cset.List() {
