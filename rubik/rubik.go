@@ -1,4 +1,6 @@
-// 2x2x2 Rubik's cube solver.
+// This program is a solver for the 2x2x2 Rubik's cube.
+//
+// Example usage: go run rubik.go WROOOYRRGGGGWBRYWYBOYBBW
 package main
 
 import (
@@ -48,7 +50,6 @@ type MoveSeq struct {
 }
 
 func main() {
-	// example usage: rubik WROOOYRRGGGGWBRYWYBOYBBW
 	s := State(strings.Join(os.Args[1:], ""))
 
 	sol, finalState, ok := solve(s)
