@@ -1,4 +1,4 @@
-// mancala game. Usage: mancala Player PocketCount1 PocketCount2 ... PocketCount13
+// mancala game. Usage: mancala Player PocketCount0 PocketCount1 PocketCount2 ... PocketCount13
 // Press ctrl-c to interrupt search and display chosen move.
 package main
 
