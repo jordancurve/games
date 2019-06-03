@@ -1,4 +1,10 @@
 // Calculate the number of legal 60-card decks in various Magic the Gathering formats.
+//
+// Results with 2019-06-03 mtgjson data:
+// standard: 7.03e+113 (703157299624545053686771888932520980286428279076474012460151327012433705223062879010429007489792352368415680180400)
+// modern: 2.29e+164 (229241017427318043159764934629690835542655152031535534015191438353327502711772302958651348359168786657337832400898840998833277507768943622200054517284702035550051800)
+// legacy: 2.48e+174 (2476245970516236803157138976198690342673231699980791266540935465097380031382411336013990929809169770898356715035479025800730182913157595543506016140547900979848605735227225255)
+// vintage: 2.91e+174 (2914429382569820774637578150121710890809328668604110727990775935135618637873885636206091853018973867369917756238339541481092956757836236427126456480990881788926023871498707668)
 package main
 
 import (
@@ -9,20 +15,15 @@ import (
 	"strings"
 )
 
-type Legality struct {
-	Format, Legality string
-}
-
 type Card struct {
 	Name       string
 	Type       string
-	Legalities []Legality
+	Legalities map[string]string
 }
 
 func main() {
-	limits := FormatLimits("AllCards-x.json") // from https://mtgjson.com/json/AllCards-x.json.zip
-	formats := []string{"Standard", "Modern", "Legacy", "Vintage"}
-	for _, f := range formats {
+	limits := FormatLimits("AllCards.json") // from https://mtgjson.com/json/AllCards.json
+	for _, f := range []string{"standard", "modern", "legacy", "vintage"} {
 		c := LimitedMultiChoose(60, limits[f])
 		fmt.Printf("%8s: %.3g (%v)\n", f, new(big.Float).SetInt(c), c)
 	}
@@ -39,19 +40,18 @@ func FormatLimits(mtgJsonFile string) map[string][]int {
 	}
 	limits := map[string][]int{}
 	for _, c := range cards {
-		for _, leg := range c.Legalities {
-			f := leg.Format
+		for f, leg := range c.Legalities {
 			if _, ok := limits[f]; !ok {
 				limits[f] = []int{}
 			}
 			lim := 0
-			if leg.Legality == "Legal" {
+			if leg == "Legal" {
 				if strings.HasPrefix(c.Type, "Basic Land") {
 					lim = 1000
 				} else {
 					lim = 4
 				}
-			} else if leg.Legality == "Restricted" {
+			} else if leg == "Restricted" {
 				lim = 1
 			}
 			if lim > 0 {
